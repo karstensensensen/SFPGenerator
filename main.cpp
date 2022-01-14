@@ -2,6 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
+#include <map>
 #include <unordered_map>
 
 using std::filesystem::path;
@@ -9,9 +10,15 @@ using std::filesystem::path;
 #define ERR(msg) std::cout << msg << "\nPress any key to exit..."; std::cin.get(); exit(-1);
 
 // maps the name of the template to the directory of the template file
-using TemplateMap = std::unordered_map<std::string, std::filesystem::path>;
+using TemplateMap = std::map<std::string, std::filesystem::path>;
 
 static std::unordered_map<std::string, std::string> macro_map;
+
+// helper function for sorting a TemplateMap
+bool compareTemplate(TemplateMap::const_reference a, TemplateMap::const_reference b)
+{
+	return a.first.compare(b.first) <= 0;
+}
 
 TemplateMap loadAvaliableTemplates(path template_file)
 {
@@ -113,7 +120,7 @@ int main(size_t argc, char** argv)
 	std::string project_name;
 	std::string target_template_name;
 	TemplateMap avaliable_templates = loadAvaliableTemplates(templates_file);
-
+	
 	// load template used from last session as the default target_tempalte
 	if (std::filesystem::exists(path(argv[0]).parent_path() / ".LastTemplate"))
 	{
@@ -140,7 +147,6 @@ int main(size_t argc, char** argv)
 
 	if (argc <= 2)
 	{
-
 		std::cout << "Project Name: ";
 
 		std::getline(std::cin, project_name);
@@ -221,16 +227,23 @@ int main(size_t argc, char** argv)
 	std::cout << "Project \"" << project_name << "\" will be created at \"" << target_dir << "\" using template \"" << target_template_name << "\"\n\n";
 
 	
-	path project_dir = path(target_dir) / project_name;
-	if (std::filesystem::exists(project_dir) && !std::filesystem::is_empty(project_dir))
+	// setup paths
+
+	path template_path = avaliable_templates[target_template_name].parent_path();
+	path target_path = path(target_dir);
+	path project_path = target_path / project_name;
+	if (std::filesystem::exists(project_path) && !std::filesystem::is_empty(project_path))
 	{
-		ERR("Project directory \"" << project_dir << "\" must be empty, stopping program");
+		ERR("Project directory \"" << project_path << "\" must be empty, stopping program");
 	}
-	// ============== set macros ==============
+
+	
+	// set macros
 	
 	macro_map["NAME"] = project_name;
 	macro_map["TARGET_DIR"] = target_dir;
-	macro_map["PROJECT_DIR"] = project_dir.string();
+	macro_map["PROJECT_DIR"] = project_path.string();
+	macro_map["TEMPLATE_DIR"] = template_path.string();
 
 	// =========== generate project ===========
 
@@ -263,8 +276,8 @@ int main(size_t argc, char** argv)
 		//                                                     makes sure there is no space in the target name " TEST.txt" -> "TEST.txt"
 		destination_file = std::string_view(cmt_line.begin() + cmt_line.find_first_not_of(' ', seperation_index + 1), cmt_line.end());
 		
-		path source_path = path(avaliable_templates[target_template_name]).parent_path() / source_file;
-		path destination_path = path(project_name) / destination_file;
+		path source_path = template_path / source_file;
+		path destination_path = project_path / destination_file;
 
 		if (!std::filesystem::exists(source_path))
 		{
@@ -282,32 +295,45 @@ int main(size_t argc, char** argv)
 		}
 	}
 
+	path custom_ide_path = template_path / "CustomIDE";
+	// check if a custom ide has been supplied
+	if (std::filesystem::exists(custom_ide_path))
+	{
+		std::cout << "Found CustomIDE file\n\n";
 
-	path vs_path_file = path(argv[0]).parent_path() / "VSPath.dat";
-	if (!std::filesystem::exists(vs_path_file))
+		std::ifstream custom_ide_in(custom_ide_path);
+		std::stringstream command;
+		std::string ide_exec;
+		
+		// first (and only) line should be the executable path
+		std::getline(custom_ide_in, ide_exec);
+
+		if (std::filesystem::exists(ide_exec))
+		{
+			// surround with quotes incase there are spaces in the path
+			command << "\"\"" << ide_exec << "\" " << project_path << '"';
+			
+			std::cout << "Attempting to open IDE...\n";
+
+			int res = std::system(command.str().data());
+
+			if (res != 0)
+			{
+				// pause and display command executed, if return code is not 0
+				std::cout << "\nProcess exited with a failure code\n";
+				std::cout << "Command: " << command.str() << '\n';
+				std::cin.get();
+			}
+		}
+		else
+		{
+			std::cout << "Could not find executable provided in the CustomIDE file\n" << ide_exec << "\nPress any key to exit...\n";
+			std::cin.get();
+		}
+	}
+	else
 	{
 		std::cout << "Succesfully created project from template\nPress any key to exit...";
 		std::cin.get();
-	}
-	else // visual studio executable path has been providing
-	{
-		std::cout << "Found visual studio executable path, attempting to open project...\n";
-
-		std::ifstream vs_path_in(vs_path_file);
-		std::string command = "\"\"";
-		std::string vs_exec_path;
-
-		std::getline(vs_path_in, vs_exec_path);
-
-		// surround with quotes incase there are spaces in the path
-		command.append(vs_exec_path);
-		command.append("\" \"");
-		command.append(project_dir.string() + "\"\"");
-
-		std::cout << command << '\n';
-		int res = std::system(command.data());
-
-		if(res != 0)
-			std::cin.get();
 	}
 }
