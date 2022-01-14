@@ -1,62 +1,197 @@
-# Usage
-The program will create the project in the folder passed as the first argument
-> CPG *path*
+# **SFPGenerator**
 
-afterwards the user will be prompted for the project name.
+SFPGenerator, short for straight forward project generator, is a simple command line tools for generating projects from simple and easy to construct templates.
 
-&nbsp;
+It can be used for any programming language, or anything else that needs templates for that matter.
 
-*The project name is not passed as an commandline argument in case the user decides to add the program to their right click menu.*
+Aswell as generating projects, it can also automatically open the newly generated projects in a user specified IDE.
 
-&nbsp;
+If desired, the program can also be added to the right click menu for explorer. This makes the program both easy to use and quick to run.
 
-and finally the name of the template will be asked for.
+> CURRENTLY WINDOWS ONLY, MIGHT CHANGE IN THE FUTURE
 
-If the user inputs nothing, the last loaded template will be used.
+## **General structure**
 
-# Registrering a template
-A tempalte can be regristrered by placing the path to the .cmt file in the *Templates.dat* file.
+The SFPGenerator requires a Templates.csv file specifying the locations of all the desired .sft (straight forward template) files.
 
-If no such file is present it should be created in the same directory as the executable.
+The directories containing these .sft files is the template itself.
+This file exists as a way for the SFPGenerator to know how the template folder shall be restructured and remapped when generating the project.
 
-# Creating a template
-A CMake template requires a folder structure already made and a .cmt file.
+The name of the template is also defined in the .sft file.
 
-The .cmt file contains the mapping of the current folder structure to the resulting structure as well as the name of the template.
+## **Creating a template**
 
+A template requires a folder structure already made and a .sft file, as explained earlier.
+
+The .sft file contains the mapping of the current folder structure to the resulting structure, as well as the name of the template.
+
+A .sft file always starts with the project name at the very top of the file. This is then followed by the mapping of the current template folder structure to the resulting generated structure.
+Each mapping will have the syntax source:destination, where source and destination are both either a folder or a file.
+
+### .sft file example
+
+> *template.sft*
+>
 > TemplateName
-> 
-> OriginFile1:DestinationFile1
-> 
-> OriginFolder/OriginFile2:DestinationFile2
-> 
+>
+> source_1 : destination_1
+>
+> source_folder/source_2 : destination2
+>
 > and so on...
 
-These files can contain macros that will be replaced in their destination file by the corresponding macro value
-Macros should be used as |MACRO|.
+*note how the template mapping does not need to correspond to the generated mapping.*
 
-Macros avaliable are:
-> NAME (Name of the project)
+The source files can contain macros that will be replaced in their destination file by the corresponding macro values
+Marco syntax functions as follows: |MACRO|, where MACRO is the name of the macro.
+furthermore, a macro can be escaped by surrounding them with two pipes instead of one.
 
-## Example
+| source        | destination|
+|-----------    |------------|
+| \|\|MACRO\|\| | \|MACRO\|  |
+| \|MACRO\|     | MACRO_VALUE|
 
->TEST.txt
+pipes only need to be escaped if they otherwise would form the syntax of a macro, meaning a | b does not need an extra pipe.
+
+[//]: # (Ironnacly enough, a lot of the pipes used in the taple needed to be escaped)
+
+Macros available are:
+> NAME (Name of the project
 >
-> Hello, |NAME|
-
->Template.cmt
+> TARGET_DIR (The parent directory of the generated project)
 >
-> Template
+> PROJECT_DIR (The parent directory of the generated project)
 >
-> "TEST.txt" "Destination.txt"
+> TEMPLATE_DIR (The directory of the template)
+
+## **Registrering a template**
+
+A template can be registered by placing the path to the .sft file in the *Templates.csv* file.
+
+The *Templates.csv* file should be placed in the same directory as the executable.
+
+### Tempalte registration example
+
+> *Templates.csv*
 >
+> foo/template_a/template_file.sft
+>
+> bar/template_b/template file with space but no quotes.sft
 
-The result with generating a project with the name "Project", from this template is visualized below
+paths should never be encapsulated with quotes (") and should always be separated by newlines.
 
-> Project/Destinaion.txt
+## **Generating from a template**
+
+The program needs 3 inputs to be able to generate a project, the target directory, the project name and finally the template name.
+
+These arguments can either be provided when calling the program through the command line, or if not passed as arguments, then, the user will be prompted to input them into the terminal.
+
+> SFGP TARGET_DIRECTORY PROJECT_NAME TEMPLATE_NAME
+
+The order should be kept as the above example showcases.
+
+### **Target directory**
+
+The directory where the generated project will be placed
+
+&nbsp;
+
+### **Project name**
+
+The name of the folder the generated project will be placed in, as well as the value of the |NAME| macro.
+
+&nbsp;
+
+### **Template name**
+
+The name of the target template.
+
+If no name has been provided, and the program has generated a template before, the user can input nothing when prompted to specify the template and the program will instead use the last used template as the target template.
+
+If available, this default template will be displayed in parentheses next to the user prompt.
+
+## **Custom IDE**
+
+The custom IDE functionality is optional per template, and it is therefore not required to have this file in each template.
+
+If no Custom IDE file is specified, SFPGenerator will simply quit when it has finished generating the project.
+
+To specify a custom IDE that should open the project right after it has been generated, a *CustomIDE* file is needed.
+
+this file should be placed in the same directory as the .sft file.
+
+The file simply contains the path to the executable of the IDE and any optional arguments.
+However, it is required that the IDE can open a project from the command line, as SFPGenerator simply calls the command in the file, suffixed with the path to the project.
+The user should therefore make sure the necessary arguments for this to be possible, already exists in the *CustomIDE* file.
+
+### CustomIDE example
+
+this is an example of how a user might add visual studio as the default IDE for a specific template.
+
+> *CustomIDE*
+>
+> path/to/vs/devenv.exe
+
+### **pro tip**
+
+It can sometimes be infuriating to copy the same *CustomIDE* file over and over again, as you might only use this single IDE and will never use anything else.
+
+Now you might wonder how this could be solved, well I have just the solution for you...
+
+Simply create a template for your templates which contains this *CustomIDE* file and use this every time you need to generate a new template!
+
+A sort of meta-template one could say...
+
+## **Final Example**
+
+A small example of a possible file structure can be seen below
+
+```txt
+============= Folder structure ===============================================
+/templates_folder/
+                 template/
+                         folderA/
+                                fileA.txt
+                         folderB/
+                         fileB.txt
+                         template.sft
+                         CustomIDE
+------------------------------------------------------------------------------
+/bin/
+    SFPG.exe
+    Templates.csv
+
+============= template.sft ===================================================
+TemplateName
+folderA/fileA.txt : A.txt
+folderB/ : Hello/
+fileB.txt : folder/B.txt
+
+============= fileA.txt ======================================================
+Hello, this projects name is |NAME|!!!
+
+============= fileB.txt ======================================================
+Hello, this projects name is ||NAME||!!!
+
+============= CustomIDE (vs 2022) ============================================
+C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe
+
+============= Command ========================================================
+>> SFPG.exe projects MyProject TemplateName
+
+============= Resulting structure ============================================
+/projects/
+         MyProject/
+                  A.txt
+                  folder/
+                        B.txt
+                  Hello/
+
+============= A.txt ==========================================================
+Hello, this projects name is MyProject!!!
+
+============= B.txt ==========================================================
+Hello, this projects name is |NAME|!!!
 
 
->Destination.txt
-> 
-> Hello, Project
-> 
+```
