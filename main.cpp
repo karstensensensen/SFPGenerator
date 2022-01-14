@@ -14,15 +14,15 @@ using TemplateMap = std::map<std::string, std::filesystem::path>;
 
 static std::unordered_map<std::string, std::string> macro_map;
 
-TemplateMap loadAvaliableTemplates(path template_file)
+TemplateMap loadavailableTemplates(path template_file)
 {
-	TemplateMap avaliable_templates;
+	TemplateMap available_templates;
 
-	// load all the avaliable templates from the template file
-	std::ifstream avaliable_templates_file(template_file);
+	// load all the available templates from the template file
+	std::ifstream available_templates_file(template_file);
 	std::string template_file_name;
 
-	while (std::getline(avaliable_templates_file, template_file_name))
+	while (std::getline(available_templates_file, template_file_name))
 	{
 		// get the name of the tempalte
 		// the name should always be at the top of the template file
@@ -32,13 +32,13 @@ TemplateMap loadAvaliableTemplates(path template_file)
 		std::ifstream template_file(template_file_name);
 		std::getline(template_file, template_name);
 
-		avaliable_templates[template_name] = template_file_name;
+		available_templates[template_name] = template_file_name;
 	}
 
-	return avaliable_templates;
+	return available_templates;
 }
 
-void printAvaliableTemplates(TemplateMap& templates)
+void printavailableTemplates(TemplateMap& templates)
 {
 	size_t max_columns = 5;
 
@@ -113,7 +113,7 @@ int main(size_t argc, char** argv)
 	std::string target_dir;
 	std::string project_name;
 	std::string target_template_name;
-	TemplateMap avaliable_templates = loadAvaliableTemplates(templates_file);
+	TemplateMap available_templates = loadavailableTemplates(templates_file);
 	
 	// load template used from last session as the default target_tempalte
 	if (std::filesystem::exists(path(argv[0]).parent_path() / ".LastTemplate"))
@@ -121,7 +121,7 @@ int main(size_t argc, char** argv)
 		std::ifstream last_template(path(argv[0]).parent_path() / ".LastTemplate");
 		std::getline(last_template, target_template_name);
 
-		if (!avaliable_templates.contains(target_template_name))
+		if (!available_templates.contains(target_template_name))
 		{
 			std::cout << "Template \"" << target_template_name << "\", used from last session, was not found";
 
@@ -154,7 +154,7 @@ int main(size_t argc, char** argv)
 	{
 		std::cout << "Avalible templates:\n";
 
-		printAvaliableTemplates(avaliable_templates);
+		printavailableTemplates(available_templates);
 
 		bool found_template = false;
 
@@ -173,13 +173,13 @@ int main(size_t argc, char** argv)
 
 			std::getline(std::cin, result);
 
-			if (result == "" && target_template_name == "") // use default template, if avaliable
+			if (result == "" && target_template_name == "") // use default template, if available
 			{
 				std::cout << "No default template was found\n";
 			}
 			else if (result != "")
 			{
-				if (avaliable_templates.contains(result))
+				if (available_templates.contains(result))
 				{
 					target_template_name = result;
 
@@ -202,7 +202,7 @@ int main(size_t argc, char** argv)
 		target_template_name = argv[3];
 	}
 
-	if (!avaliable_templates.contains(target_template_name))
+	if (!available_templates.contains(target_template_name))
 	{
 		ERR("No template with the name \"" << target_template_name << "\" was found, stopping program");
 	}
@@ -223,7 +223,7 @@ int main(size_t argc, char** argv)
 	
 	// setup paths
 
-	path template_path = avaliable_templates[target_template_name].parent_path();
+	path template_path = available_templates[target_template_name].parent_path();
 	path target_path = path(target_dir);
 	path project_path = target_path / project_name;
 
@@ -242,7 +242,7 @@ int main(size_t argc, char** argv)
 
 	// =========== generate project ===========
 
-	std::ifstream cmake_template_file(avaliable_templates[target_template_name]);
+	std::ifstream cmake_template_file(available_templates[target_template_name]);
 
 	std::string cmt_line;
 	// skip the name
