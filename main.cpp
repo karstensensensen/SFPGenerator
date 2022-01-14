@@ -14,12 +14,6 @@ using TemplateMap = std::map<std::string, std::filesystem::path>;
 
 static std::unordered_map<std::string, std::string> macro_map;
 
-// helper function for sorting a TemplateMap
-bool compareTemplate(TemplateMap::const_reference a, TemplateMap::const_reference b)
-{
-	return a.first.compare(b.first) <= 0;
-}
-
 TemplateMap loadAvaliableTemplates(path template_file)
 {
 	TemplateMap avaliable_templates;
@@ -232,6 +226,7 @@ int main(size_t argc, char** argv)
 	path template_path = avaliable_templates[target_template_name].parent_path();
 	path target_path = path(target_dir);
 	path project_path = target_path / project_name;
+
 	if (std::filesystem::exists(project_path) && !std::filesystem::is_empty(project_path))
 	{
 		ERR("Project directory \"" << project_path << "\" must be empty, stopping program");
