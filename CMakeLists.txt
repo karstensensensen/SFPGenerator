@@ -5,7 +5,7 @@ else()
 endif()
 set(CMAKE_CXX_STANDARD 20)
 
-project(Straight Forward Project Generator CXX)
+project("SFPGenerator" CXX)
 
 # place all predefined target projects into a filter
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
