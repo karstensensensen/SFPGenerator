@@ -185,6 +185,10 @@ calls *SFPGenerator.exe* with the selected template passed to the --Template fla
 ### Update
 calls *setup_rightclick.bat*, meaning it will update the menu so its synced with the newest *QuickTempaltes.csv* file.
 
+## !IMPORTANT!
+
+if uninstalling, either run *remove_rightclick.bat* and then *uninstall.exe* or run the *copmlete_uninstall.bat* script, in order to make sure the right clikc menus are removed as well.
+
 ## **Build**
 
 This project uses cmake to generate, build and install the project.
