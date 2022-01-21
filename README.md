@@ -203,7 +203,7 @@ Otherwise -DSFPG_RIGHTCLICK=OFF should be passed
 
 > *without right click setup*
 >
-> cmake -B./build -DSFPG_RIGHTCLICK=ON 
+> cmake -B./build -DSFPG_RIGHTCLICK=OFF 
 
 
 To build the project, cd into the build directory and call cmake --build with the wanted configuration
