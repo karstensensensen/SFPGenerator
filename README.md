@@ -8,7 +8,15 @@ Aswell as generating projects, it can also automatically open the newly generate
 
 If desired, the program can also be added to the right click menu for explorer. This makes the program both easy to use and quick to run.
 
-> CURRENTLY WINDOWS ONLY, MIGHT CHANGE IN THE FUTURE
+## **Support**
+
+This project was developed and tested on windows, although it should still be cross platform.
+
+However, support for automatic context / right click menu is windows only.
+
+cmake and cpack is needed to build from source as they function as the projects build/install-system. These programs are **only** needed to build the project, and not run it, so these will not be needed if an already generated installer is used.
+
+the CARG submodule is also needed if build from source, so make to clone this repository recursively!
 
 ## **General structure**
 
@@ -53,7 +61,7 @@ furthermore, a macro can be escaped by surrounding them with two pipes instead o
 
 pipes only need to be escaped if they otherwise would form the syntax of a macro, meaning a | b does not need an extra pipe.
 
-[//]: # (Ironnacly enough, a lot of the pipes used in the taple needed to be escaped)
+[//]: # (Ironically enough, a lot of the pipes used in the taple needed to be escaped)
 
 Macros available are:
 > NAME (Name of the project
@@ -64,13 +72,13 @@ Macros available are:
 >
 > TEMPLATE_DIR (The directory of the template)
 
-## **Registrering a template**
+## **Registering a template**
 
 A template can be registered by placing the path to the .sft file in the *Templates.csv* file.
 
 The *Templates.csv* file should be placed in the same directory as the executable.
 
-### Tempalte registration example
+### Template registration example
 
 > *Templates.csv*
 >
@@ -86,9 +94,9 @@ The program needs 3 inputs to be able to generate a project, the target director
 
 These arguments can either be provided when calling the program through the command line, or if not passed as arguments, then, the user will be prompted to input them into the terminal.
 
-> SFGP TARGET_DIRECTORY PROJECT_NAME TEMPLATE_NAME
+> SFGP --TargetDir TARGET_DIRECTORY --ProjectName PROJECT_NAME --Template TEMPLATE_NAME
 
-The order should be kept as the above example showcases.
+The order of the flags do not matter.
 
 ### **Target directory**
 
@@ -134,13 +142,80 @@ this is an example of how a user might add visual studio as the default IDE for 
 
 ### **pro tip**
 
-It can sometimes be infuriating to copy the same *CustomIDE* file over and over again, as you might only use this single IDE and will never use anything else.
+It can sometimes be infuriating to copy the same *CustomIDE* file repeatedly, as you might only use this single IDE and will never use anything else.
 
 Now you might wonder how this could be solved, well I have just the solution for you...
 
 Simply create a template for your templates which contains this *CustomIDE* file and use this every time you need to generate a new template!
 
-A sort of meta-template one could say...
+A sort of template-template one could say...
+
+## **Context / rightclick menu (WINDOWS ONLY)**
+
+To set up a right click menu, the script "setup_rightclick.bat" should be called.
+
+This will require administrator privileges as it is needed to modify the registry to add the menu.
+
+The final menu will be set up as the example below
+
+> No Template
+>
+> -----------
+>
+> Template 1
+>
+> Template 2
+>
+> ...
+>
+> Template n
+>
+> -----------
+>
+> Update
+
+Each template name must be added to a *QuickTemplates.csv* file, that should be located inside the install directory.
+
+### No Template
+simply calls *SFPGenerator.exe* with the current directory as the target directory and with no templates.
+
+### Template section
+calls *SFPGenerator.exe* with the selected template passed to the --Template flag and uses the current directory as the target directory.
+
+### Update
+calls *setup_rightclick.bat*, meaning it will update the menu so its synced with the newest *QuickTempaltes.csv* file.
+
+## **Build**
+
+This project uses cmake to generate, build and install the project.
+
+For a quick build on windows, the script *build.bat* should be executed. This will generate an installer that automatically installs the necessary files to a user specified install directory.
+
+
+
+For the right click setup project to be generated -DSFPG_RIGHTCLICK=ON should be passed to cmake when generating the build.
+
+> *with right click setup*
+>
+> cmake -B./build -DSFPG_RIGHTCLICK=ON 
+
+Otherwise -DSFPG_RIGHTCLICK=OFF should be passed
+
+> *without right click setup*
+>
+> cmake -B./build -DSFPG_RIGHTCLICK=ON 
+
+
+To build the project, cd into the build directory and call cmake --build with the wanted configuration
+
+> cd ./build && cmake --build --config (Debug/Release)
+
+To generate the installer call cpack with the same configuration passed as in the build step
+
+> cpack -C (Debug/Release)
+
+Finally, run the generated installer to install the project.
+
 
 ## **Final Example**
 
@@ -177,7 +252,7 @@ Hello, this projects name is ||NAME||!!!
 C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe
 
 ============= Command ========================================================
->> SFPG.exe projects MyProject TemplateName
+>> SFPG.exe --TargetDir projects --ProjectName MyProject --Template TemplateName
 
 ============= Resulting structure ============================================
 /projects/
@@ -195,3 +270,4 @@ Hello, this projects name is |NAME|!!!
 
 
 ```
+
