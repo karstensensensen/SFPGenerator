@@ -1,6 +1,6 @@
 # **SFPGenerator**
 
-SFPGenerator, short for straight forward project generator, is a simple command line tools for generating projects from simple and easy to construct templates.
+SFPGenerator, short for straight forward project generator, is a simple command line tool for generating projects from simple and easy to construct templates.
 
 It can be used for any programming language, or anything else that needs templates for that matter.
 
