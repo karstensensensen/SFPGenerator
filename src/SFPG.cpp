@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <carg.h>
 
 using std::filesystem::path;
 
@@ -99,8 +100,24 @@ void transferTemplateFile(path source_file, path target_file)
 }
 
 // Takes the name of the template as well as the name of the project and generates a resulting CMake project out of it, which can be opened with visual studio
-int main(size_t argc, char** argv)
+int main(int argc, char** argv)
 {
+	// there must be 0 or 1 instances of each argument
+	carg::ArgProp prop = carg::ArgProp(carg::CMDTypes::String, ' ', 0, 1);
+	carg::ArgParser cmd_parser({ { "--Template", prop}, {"--TargetDir", prop}, {"--ProjectName", prop} });
+	carg::ParsedArgs cmd_parsed;
+
+	try
+	{
+		cmd_parsed = cmd_parser.parseArgs(argc, argv);
+	}
+	catch(carg::InvalidCArg& e)
+	{
+		std::cout << e.what() << '\n';
+		return -1;
+	}
+
+
 	// Check if needed files exist
 
 	path templates_file = path(argv[0]).parent_path() / "Templates.csv";
@@ -110,11 +127,25 @@ int main(size_t argc, char** argv)
 		ERR("Missing \"Templates.csv\" file, stopping program\n");
 	}
 
+	// set values if a commandline flag was passed
+
 	std::string target_dir;
+
+	if (cmd_parsed["--TargetDir"].size() == 1)
+		target_dir = cmd_parsed["--TargetDir"][0].getArg();
+
 	std::string project_name;
+
+	if (cmd_parsed["--ProjectName"].size() == 1)
+		project_name = cmd_parsed["--ProjectName"][0].getArg();
+
 	std::string target_template_name;
 	TemplateMap available_templates = loadavailableTemplates(templates_file);
 	
+	if (cmd_parsed["--Template"].size() == 1)
+		target_template_name = cmd_parsed["--Template"][0].getArg();
+	
+
 	// load template used from last session as the default target_tempalte
 	if (std::filesystem::exists(path(argv[0]).parent_path() / ".LastTemplate"))
 	{
@@ -129,28 +160,22 @@ int main(size_t argc, char** argv)
 		}
 	}
 
-	if (argc <= 1)
+	// if no flag was passed, prompt for user input
+
+	if (target_dir == "")
 	{
 		std::cout << "Target Directory: ";
 		std::getline(std::cin, target_dir);
 	}
-	else
-	{
-		target_dir = argv[1];
-	}
 
-	if (argc <= 2)
+	if (project_name == "")
 	{
 		std::cout << "Project Name: ";
 
 		std::getline(std::cin, project_name);
 	}
-	else
-	{
-		project_name = argv[2];
-	}
 
-	if (argc <= 3)
+	if (target_template_name == "")
 	{
 		std::cout << "Avalible templates:\n";
 
@@ -197,10 +222,6 @@ int main(size_t argc, char** argv)
 		}
 
 	}
-	else
-	{
-		target_template_name = argv[3];
-	}
 
 	if (!available_templates.contains(target_template_name))
 	{
@@ -212,11 +233,6 @@ int main(size_t argc, char** argv)
 
 	default_template_out << target_template_name << '\n';
 	default_template_out.close();
-
-	if(argc > 4)
-	{
-		ERR("Too many command line arguments passed, expected at max 3, got " << argc - 1 << '\n');
-	}
 	
 	std::cout << "Project \"" << project_name << "\" will be created at \"" << target_dir << "\" using template \"" << target_template_name << "\"\n\n";
 
