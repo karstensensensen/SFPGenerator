@@ -103,12 +103,12 @@ void install(HKEY key_handle, const char* exec_dir)
     }
 
     {
-        // then create a "refresh" shortcut
+        // then create an "update" shortcut
         const DWORD seperator_before = ECF_SEPARATORBEFORE;
         HKEY sub_key;
 
-        // 2_ makes sure the refresh command always will be on the botton of the menu
-        result = RegCreateKeyEx(key_handle, TEXT("shell\\2_Refresh\\command"), NULL, NULL, NULL, KEY_WRITE, NULL, &sub_key, NULL);
+        // 2_ makes sure the update command always will be on the botton of the menu
+        result = RegCreateKeyEx(key_handle, TEXT("shell\\2_Update\\command"), NULL, NULL, NULL, KEY_WRITE, NULL, &sub_key, NULL);
 
         WinErr(result);
 
@@ -120,7 +120,7 @@ void install(HKEY key_handle, const char* exec_dir)
 
         WinErr(result);
 
-        result = RegOpenKeyEx(key_handle, TEXT("shell\\2_Refresh"), NULL, KEY_WRITE, &sub_key);
+        result = RegOpenKeyEx(key_handle, TEXT("shell\\2_Update"), NULL, KEY_WRITE, &sub_key);
 
         WinErr(result);
 
@@ -129,7 +129,7 @@ void install(HKEY key_handle, const char* exec_dir)
         WinErr(result);
 
 
-        result = RegSetValueEx(sub_key, TEXT("MUIVerb"), NULL, REG_SZ, KEY_STR("Refresh"));
+        result = RegSetValueEx(sub_key, TEXT("MUIVerb"), NULL, REG_SZ, KEY_STR("Update"));
 
         WinErr(result);
 
