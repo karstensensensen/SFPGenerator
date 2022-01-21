@@ -240,7 +240,7 @@ A small example of a possible file structure can be seen below
                          CustomIDE
 ------------------------------------------------------------------------------
 /bin/
-    SFPG.exe
+    SFPGenerator.exe
     Templates.csv
 
 ============= template.sft ===================================================
@@ -259,7 +259,7 @@ Hello, this projects name is ||NAME||!!!
 C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe
 
 ============= Command ========================================================
->> SFPG.exe --TargetDir projects --ProjectName MyProject --Template TemplateName
+>> SFPGenerator.exe --TargetDir projects --ProjectName MyProject --Template TemplateName
 
 ============= Resulting structure ============================================
 /projects/
