@@ -69,12 +69,12 @@ endforeach()
 # setup install
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ./)
-install(FILES files/Templates.csv DESTINATION ./)
+install(FILES install_files/Templates.csv DESTINATION ./)
 
 
 if(${SFPG_RIGHTCLICK})
 	install(TARGETS ${PROJECT_NAME}_rightclick DESTINATION ./)
-	install(FILES scripts/setup_rightclick.bat scripts/remove_rightclick.bat files/QuickTemplates.csv DESTINATION ./)
+	install(FILES scripts/setup_rightclick.bat scripts/remove_rightclick.bat install_files/QuickTemplates.csv DESTINATION ./)
 endif()
 
 include(InstallRequiredSystemLibraries)
