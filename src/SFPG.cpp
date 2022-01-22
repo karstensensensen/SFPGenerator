@@ -13,7 +13,7 @@ using std::filesystem::path;
 // maps the name of the template to the directory of the template file
 using TemplateMap = std::map<std::string, std::filesystem::path>;
 
-static std::unordered_map<std::string, std::string> macro_map;
+static std::unordered_map<std::string, std::string> g_macro_map;
 
 TemplateMap loadavailableTemplates(path template_file)
 {
@@ -61,40 +61,59 @@ void printavailableTemplates(TemplateMap& templates)
 	std::cout << '\n';
 }
 
+template<typename T>
+constexpr bool is_char_iterator = !std::is_same_v<T::iterator_category, std::output_iterator_tag> && std::is_same_v<T::value_type, char>;
+
+// takes an input iterator and returns a string where all macros present in the input iterator has been replaced by their corresponding macro values
+template<typename TIter, typename TStream , std::enable_if_t<is_char_iterator<TIter> && std::is_base_of_v<std::ostream, TStream>, bool> = false>
+void parseMacro(char encapsulator, TIter begin, TIter end, TStream& out_stream)
+{
+	for(TIter iter = begin; iter != end; iter++)
+	{
+		if ((*iter) == encapsulator) // macro detected
+		{
+			iter++;
+
+			if (*iter != encapsulator) // if double pipes, macro should be ignored
+			{
+				std::stringstream name_stream;
+
+				while (*iter != encapsulator)
+				{
+					name_stream << *iter;
+					iter++;
+				}
+
+				std::string macro_name = name_stream.str();
+
+				if (!g_macro_map.contains(macro_name))
+				{
+					ERR("No such macro exists " << encapsulator << macro_name << encapsulator << '\n');
+				}
+
+				out_stream << g_macro_map[macro_name];
+			}
+			else
+			{
+				out_stream << encapsulator;
+			}
+		}
+		else
+		{
+			out_stream << *iter;
+		}
+	}
+}
+
 // replaces maros with their corresponding values and copies the resulting file to the target path
 void transferTemplateFile(path source_file, path target_file)
 {
 	std::ifstream source_in(source_file);
 	std::ofstream target_out(target_file);
 
-	char c;
+	std::istreambuf_iterator<char> source_iterator(source_in), end;
 
-	while (source_in.read(&c, 1))
-	{
-		if (c == '|') // macro detected
-		{
-			std::streampos fallback_pos = source_in.tellg();
-			source_in.read(&c, 1);
-
-			if (c != '|') // if double pipes, macro should be ignored
-			{
-				source_in.seekg(fallback_pos); // undo read of first character in macro name
-				std::string macro_name;
-				std::getline(source_in, macro_name, '|');
-
-				if (!macro_map.contains(macro_name))
-				{
-					ERR("No such macro exists |" << macro_name << "|\n");
-				}
-
-				target_out.write(macro_map[macro_name].data(), macro_map[macro_name].size());
-
-				continue; // c should not be written to the file
-			}
-		}
-
-		target_out.write(&c, 1);
-	}
+	parseMacro('|', source_iterator, end, target_out);
 
 	target_out.close();
 }
@@ -245,16 +264,16 @@ int main(int argc, char** argv)
 
 	if (std::filesystem::exists(project_path) && !std::filesystem::is_empty(project_path))
 	{
-		ERR("Project directory \"" << project_path << "\" must be empty, stopping program");
+		ERR("Project directory \"" << project_path << "\" must be empty, stopping program\n");
 	}
 
 	
 	// set macros
 	
-	macro_map["NAME"] = project_name;
-	macro_map["TARGET_DIR"] = target_dir;
-	macro_map["PROJECT_DIR"] = project_path.string();
-	macro_map["TEMPLATE_DIR"] = template_path.string();
+	g_macro_map["NAME"] = project_name;
+	g_macro_map["TARGET_DIR"] = target_dir;
+	g_macro_map["PROJECT_DIR"] = project_path.string();
+	g_macro_map["TEMPLATE_DIR"] = template_path.string();
 
 	// =========== generate project ===========
 
@@ -282,13 +301,20 @@ int main(int argc, char** argv)
 
 		source_file = std::string_view(cmt_line.begin(), cmt_line.begin() + seperation_index);
 		
-		std::string_view destination_file;
+		std::string_view file_view;
+		std::stringstream destination_file;
 		
-		//                                                     makes sure there is no space in the target name " TEST.txt" -> "TEST.txt"
-		destination_file = std::string_view(cmt_line.begin() + cmt_line.find_first_not_of(' ', seperation_index + 1), cmt_line.end());
+		// makes sure there is no space in the target name " TEST.txt" -> "TEST.txt"
+		file_view = std::string_view(cmt_line.begin() + cmt_line.find_first_not_of(' ', seperation_index + 1), cmt_line.end());
 		
+		is_char_iterator<decltype(file_view.begin())>;
+
+
+		// also parse macros in destination folder and file names
+		parseMacro('|', file_view.begin(), file_view.end(), destination_file);
+
 		path source_path = template_path / source_file;
-		path destination_path = project_path / destination_file;
+		path destination_path = project_path / destination_file.str();
 
 		if (!std::filesystem::exists(source_path))
 		{
