@@ -56,8 +56,9 @@ furthermore, a macro can be escaped by surrounding them with two pipes instead o
 
 | source        | destination|
 |-----------    |------------|
-| \|\|MACRO\|\| | \|MACRO\|  |
 | \|MACRO\|     | MACRO_VALUE|
+| \|\|MACRO\|\| | \|MACRO\|  |
+
 
 pipes only need to be escaped if they otherwise would form the syntax of a macro, meaning a | b does not need an extra pipe.
 
