@@ -7,9 +7,10 @@
 #include <filesystem>
 #include <ShObjIdl_core.h>
 
+// will be true if a windows error occured at some point during the setup
 static bool finishedWerror = false;
 
-//Returns the last Win32 error, in string format. Returns an empty string if there is no error.
+// prints the last Win32 error, in string format.
 void WinErr(HRESULT err)
 {
     if (err == 0) {
@@ -26,7 +27,6 @@ void WinErr(HRESULT err)
 
     std::cout << message << '\n';
 
-    //Free the Win32's string's buffer.
     LocalFree(message);
 
 }
