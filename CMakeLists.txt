@@ -7,6 +7,7 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 
 project("SFPGenerator" VERSION 0.1.1 LANGUAGES CXX )
+
 if(WIN32)
 option(SFPG_RIGHTCLICK ON)
 endif()
@@ -19,7 +20,6 @@ set(PREDEFINED_TARGETS_FOLDER "Targets")
 set (SRC_SFPG 
 	src/SFPG.cpp
 )
-
 
 add_executable ( ${PROJECT_NAME} 
 	${SRC_SFPG}
@@ -68,19 +68,31 @@ endforeach()
 
 # setup install
 
-install(TARGETS ${PROJECT_NAME} DESTINATION ./)
-install(FILES install_files/Templates.csv DESTINATION ./)
+install(TARGETS
+	${PROJECT_NAME}
+DESTINATION ./)
+
+install(FILES
+	install_files/Templates.csv
+DESTINATION ./)
 
 
 if(${SFPG_RIGHTCLICK})
-	install(TARGETS ${PROJECT_NAME}_rightclick DESTINATION ./)
-	install(FILES scripts/complete_uninstall.bat scripts/setup_rightclick.bat scripts/remove_rightclick.bat install_files/QuickTemplates.csv DESTINATION ./)
+	install(TARGETS
+		${PROJECT_NAME}_rightclick
+	DESTINATION ./)
+
+	install(FILES
+		scripts/complete_uninstall.bat
+		scripts/setup_rightclick.bat
+		scripts/remove_rightclick.bat
+		install_files/QuickTemplates.csv
+	DESTINATION ./)
 endif()
 
 include(InstallRequiredSystemLibraries)
-set(CMAKE_DEBUG_POSTFIX "d")
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-installer")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-installer")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
 include(CPack)
