@@ -86,9 +86,14 @@ void parseMacro(char encapsulator, TIter begin, TIter end, TStream& out_stream)
 
 				std::string macro_name = name_stream.str();
 
+				// if macro is not already defined, prompt the user for a value
 				if (!g_macro_map.contains(macro_name))
 				{
-					ERR("No such macro exists " << encapsulator << macro_name << encapsulator << '\n');
+					std::cout << macro_name << ": ";
+					
+					std::string macro_value;
+					std::getline(std::cin, macro_value);
+					g_macro_map[macro_name] = macro_value;
 				}
 
 				out_stream << g_macro_map[macro_name];
