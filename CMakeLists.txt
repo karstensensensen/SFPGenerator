@@ -6,7 +6,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 
-project("SFPGenerator" VERSION 0.1.1 LANGUAGES CXX )
+project("SFPGenerator" VERSION 0.2.0 LANGUAGES CXX)
 
 if(WIN32)
 option(SFPG_RIGHTCLICK ON)

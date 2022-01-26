@@ -111,7 +111,7 @@ void parseMacro(char encapsulator, TIter begin, TIter end, TStream& out_stream)
 }
 
 // replaces maros with their corresponding values and copies the resulting file to the target path
-void transferTemplateFile(path source_file, path target_file)
+void transferTemplateFile(const path& source_file, const path& target_file)
 {
 	std::ifstream source_in(source_file);
 	std::ofstream target_out(target_file);
@@ -121,6 +121,121 @@ void transferTemplateFile(path source_file, path target_file)
 	parseMacro('|', source_iterator, end, target_out);
 
 	target_out.close();
+}
+
+void openIDE(const path& ide_path, const path& project_path)
+{
+	std::ifstream custom_ide_in(ide_path);
+	std::stringstream command;
+	std::string ide_exec;
+
+	// first (and only) line should be the executable path
+	std::getline(custom_ide_in, ide_exec);
+
+	if (std::filesystem::exists(ide_exec))
+	{
+		// surround with quotes incase there are spaces in the path
+		command << "\"\"" << ide_exec << "\" " << project_path << '"';
+
+		std::cout << "Attempting to open IDE...\n";
+
+		int res = std::system(command.str().data());
+
+		if (res != 0)
+		{
+			// pause and display command executed, if return code is not 0
+			std::cout << "\nProcess exited with a failure code\n";
+			std::cout << "Command: " << command.str() << '\n';
+			std::cin.get();
+		}
+	}
+	else
+	{
+		std::cout << "Could not find executable provided in the CustomIDE file:\n\n" << ide_exec << "\n\nPress any key to exit...\n";
+		std::cin.get();
+	}
+}
+
+// removes whitespace at the start and end of the passed string
+std::string_view stripString(const std::string& str, size_t start = 0, size_t end = std::string::npos)
+{
+	return std::string_view(str.begin() + str.find_first_not_of(' ', start), str.begin() + str.find_last_not_of(' ', end) + 1);
+}
+
+void loadCustomMacros(const path& macro_path)
+{
+	std::ifstream macro_in(macro_path);
+	std::string line;
+
+	while (std::getline(macro_in, line))
+	{
+		size_t seperator_pos = line.find(':');
+
+
+		bool is_default_value = false;
+
+		// sets the parsed value as the macro value
+		if (seperator_pos != std::string::npos)
+		{
+			// make sure only one seperator exists
+			if (seperator_pos != line.find_last_of(':'))
+			{
+				ERR("Multiple seperators found at same macro assignment in CustomMacro file at\n");
+			}
+		}
+		else
+		{
+			seperator_pos = line.find(';');
+
+			if (seperator_pos != std::string::npos)
+			{
+				// make sure only one seperator exists
+				if (seperator_pos != line.find_last_of(';'))
+				{
+					ERR("Multiple seperators found at same macro assignment in CustomMacro file\n");
+				}
+
+				is_default_value = true;
+
+			}
+		}
+
+		std::string macro_name = (std::string) stripString(line.substr(0, seperator_pos));
+
+		// check if macro already has been defined
+		if (g_macro_map.contains(macro_name))
+		{
+			ERR("Multiple definitions found for macro |" << macro_name << "|\n");
+		}
+
+		// if no seperator is found, prompt the user for a value
+		if (seperator_pos == std::string::npos)
+		{
+			std::cout << macro_name << ": ";
+			std::getline(std::cin, g_macro_map[macro_name]);
+		}
+		else
+		{
+			std::string_view macro_value = stripString(line.substr(seperator_pos + 1));
+
+			if (is_default_value) // if default value, prompt the user for a value, with the option to pass nothing
+			{
+				std::cout << macro_name << " (" << macro_value << "): ";
+				std::string new_value;
+				std::getline(std::cin, new_value);
+
+				if(new_value == "")
+					new_value = macro_value;
+
+				g_macro_map[macro_name] = new_value;
+
+			}
+			else // else the specified value will be the final value of the macro
+			{
+				g_macro_map[macro_name] = macro_value;
+			}
+		}
+	}
 }
 
 // Takes the name of the template as well as the name of the project and generates a resulting CMake project out of it, which can be opened with visual studio
@@ -280,6 +395,12 @@ int main(int argc, char** argv)
 	g_macro_map["PROJECT_DIR"] = project_path.string();
 	g_macro_map["TEMPLATE_DIR"] = template_path.string();
 
+	path macro_path = template_path / "CustomMacros";
+
+	if (std::filesystem::exists(macro_path))
+		loadCustomMacros(macro_path);
+	
+
 	// =========== generate project ===========
 
 	std::ifstream cmake_template_file(available_templates[target_template_name]);
@@ -310,10 +431,7 @@ int main(int argc, char** argv)
 		std::stringstream destination_file;
 		
 		// makes sure there is no space in the target name " TEST.txt" -> "TEST.txt"
-		file_view = std::string_view(cmt_line.begin() + cmt_line.find_first_not_of(' ', seperation_index + 1), cmt_line.end());
-		
-		is_char_iterator<decltype(file_view.begin())>;
-
+		file_view = stripString(cmt_line, seperation_index + 1);
 
 		// also parse macros in destination folder and file names
 		parseMacro('|', file_view.begin(), file_view.end(), destination_file);
@@ -338,40 +456,13 @@ int main(int argc, char** argv)
 	}
 
 	path custom_ide_path = template_path / "CustomIDE";
+
 	// check if a custom ide has been supplied
 	if (std::filesystem::exists(custom_ide_path))
 	{
 		std::cout << "Found CustomIDE file\n\n";
 
-		std::ifstream custom_ide_in(custom_ide_path);
-		std::stringstream command;
-		std::string ide_exec;
-		
-		// first (and only) line should be the executable path
-		std::getline(custom_ide_in, ide_exec);
-
-		if (std::filesystem::exists(ide_exec))
-		{
-			// surround with quotes incase there are spaces in the path
-			command << "\"\"" << ide_exec << "\" " << project_path << '"';
-			
-			std::cout << "Attempting to open IDE...\n";
-
-			int res = std::system(command.str().data());
-
-			if (res != 0)
-			{
-				// pause and display command executed, if return code is not 0
-				std::cout << "\nProcess exited with a failure code\n";
-				std::cout << "Command: " << command.str() << '\n';
-				std::cin.get();
-			}
-		}
-		else
-		{
-			std::cout << "Could not find executable provided in the CustomIDE file\n" << ide_exec << "\nPress any key to exit...\n";
-			std::cin.get();
-		}
+		openIDE(custom_ide_path, project_path);
 	}
 	else
 	{

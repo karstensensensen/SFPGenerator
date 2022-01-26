@@ -1,3 +1,18 @@
+# Table of contents
+
+- [Table of contents](#table-of-contents)
+- [**SFPGenerator**](#sfpgenerator)
+  - [**Support**](#support)
+  - [**General structure**](#general-structure)
+  - [**Creating a template**](#creating-a-template)
+  - [**Registering a template**](#registering-a-template)
+  - [**Generating from a template**](#generating-from-a-template)
+  - [**Custom IDE**](#custom-ide)
+  - [**Custom Macros**](#custom-macros)
+  - [**Context / rightclick menu (WINDOWS ONLY)**](#context--rightclick-menu-windows-only)
+  - [**Build**](#build)
+  - [**Final Example**](#final-example)
+
 # **SFPGenerator**
 
 SFPGenerator, short for straight forward project generator, is a simple command line tool for generating projects from simple and easy to construct templates.
@@ -151,6 +166,23 @@ Simply create a template for your templates which contains this *CustomIDE* file
 
 A sort of template-template one could say...
 
+## **Custom Macros**
+
+If an unknown macro appears in a file, the user will be prompted for a value which will then be tied to the macro for the rest of the generation. In order to define a macro without inputting it at generation time, one should define it by passing -D to *SFPGenerator.exe*
+
+> -D MACRO_NAME MACRO_VALUE
+
+There are no limits to the number of definitions passed, however, a macro must only be defined once.
+
+another option is to create a CustomMacro file. This option also allows for a definition of a default value, meaning the user still will be prompted to define the macro, but they will have the option of passing nothing which will result in the macro using its default value.
+
+A CustomMacro file should consist of a macro name followed by either a : (actual value) or a ; (default value) and lastly the value the macro should have. Alternatively the seperator and value can be omitted, this will result in the program prompting the user for a value without the option of a default value.
+
+> *CustomMacro*
+>
+> MACRO_NAME : MACRO_VALUE
+> MACRO_NAME_DEFAULT ; MACRO_VALUE_DEFAULT
+
 ## **Context / rightclick menu (WINDOWS ONLY)**
 
 To set up a right click menu, the script "setup_rightclick.bat" should be called.
@@ -231,18 +263,21 @@ A small example of a possible file structure can be seen below
 
 ```txt
 ============= Folder structure ===============================================
-/templates_folder/
-                 template/
-                         folderA/
-                                fileA.txt
-                         folderB/
-                         fileB.txt
-                         template.sft
-                         CustomIDE
+.
+└── templates_folder
+    └── template
+        ├── folderA
+        |   └── fileA.txt
+        ├── folderB
+        |   └──
+        ├── fileB.txt
+        ├── template.sft
+        └── CustomIDE
 ------------------------------------------------------------------------------
-/bin/
-    SFPGenerator.exe
-    Templates.csv
+.
+└── bin
+    ├── SFPGenerator.exe
+    └── Templates.csv
 
 ============= template.sft ===================================================
 TemplateName
@@ -263,12 +298,14 @@ C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe
 >> SFPGenerator.exe --TargetDir projects --ProjectName MyProject --Template TemplateName
 
 ============= Resulting structure ============================================
-/projects/
-         MyProject/
-                  A.txt
-                  folder/
-                        B.txt
-                  Hello/
+.
+└── projects
+    └── MyProject
+        ├── A.txt
+        ├── folder
+        |   └── B.txt
+        └── Hello
+            └──
 
 ============= A.txt ==========================================================
 Hello, this projects name is MyProject!!!
