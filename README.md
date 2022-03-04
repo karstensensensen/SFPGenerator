@@ -21,7 +21,7 @@ It can be used for any programming language, or anything else that needs templat
 
 Aswell as generating projects, it can also automatically open the newly generated projects in a user specified IDE.
 
-If desired, the program can also be added to the right click menu for explorer. This makes the program both easy to use and quick to run.
+If desired, the program can also be added to the right click menu for explorer. This makes the program both easy to use and quick to access.
 
 ## **Support**
 
@@ -31,7 +31,7 @@ However, support for automatic context / right click menu is windows only.
 
 cmake and cpack is needed to build from source as they function as the projects build/install-system. These programs are **only** needed to build the project, and not run it, so these will not be needed if an already generated installer is used.
 
-the CARG submodule is also needed if build from source, so make to clone this repository recursively!
+the CARG submodule is also needed if build from source, so make sure to clone this repository recursively!
 
 ## **General structure**
 
