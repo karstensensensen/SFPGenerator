@@ -15,7 +15,7 @@
 
 # **SFPGenerator**
 
-SFPGenerator, short for straight forward project generator, is a simple command line tool for generating projects from simple and easy to construct templates.
+SFPGenerator, short for *straight forward project generator*, is a simple command line tool for generating projects from simple and easy to construct templates.
 
 It can be used for any programming language, or anything else that needs templates for that matter.
 
@@ -77,10 +77,10 @@ furthermore, a macro can be escaped by surrounding them with two pipes instead o
 
 pipes only need to be escaped if they otherwise would form the syntax of a macro, meaning a | b does not need an extra pipe.
 
-[//]: # (Ironically enough, a lot of the pipes used in the taple needed to be escaped)
+[//]: # (Ironically enough, a lot of the pipes used in the table needed to be escaped)
 
 Macros available are:
-> NAME (Name of the project
+> NAME (Name of the project)
 >
 > TARGET_DIR (The parent directory of the generated project)
 >
@@ -106,7 +106,7 @@ paths should never be encapsulated with quotes (") and should always be separate
 
 ## **Generating from a template**
 
-The program needs 3 inputs to be able to generate a project, the target directory, the project name and finally the template name.
+The program needs 3 inputs to be able to generate a project; the target directory, the project name, and finally the template name.
 
 These arguments can either be provided when calling the program through the command line, or if not passed as arguments, then, the user will be prompted to input them into the terminal.
 
@@ -168,7 +168,7 @@ A sort of template-template one could say...
 
 ## **Custom Macros**
 
-If an unknown macro appears in a file, the user will be prompted for a value which will then be tied to the macro for the rest of the generation. In order to define a macro without inputting it at generation time, one should define it by passing -D to *SFPGenerator.exe*
+If an unknown macro appears in a file, the user will be prompted for a value, which will then be tied to the macro for the rest of the generation. In order to define a macro without inputting it at generation time, one should define it by passing -D to *SFPGenerator.exe*
 
 > -D MACRO_NAME MACRO_VALUE
 
