@@ -207,7 +207,7 @@ The final menu will be set up as the example below
 >
 > Update
 
-Each template name must be added to a *QuickTemplates.csv* file, that should be located inside the install directory.
+Each template name (or file) must be added to a *QuickTemplates.csv* file, that should be located inside the install directory.
 
 ### No Template
 simply calls *SFPGenerator.exe* with the current directory as the target directory and with no templates.
