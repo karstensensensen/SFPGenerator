@@ -18,7 +18,7 @@ set(PREDEFINED_TARGETS_FOLDER "Targets")
 
 # SFPGenerator executable
 set (SRC_SFPG 
-	src/SFPG.cpp
+	"src/SFPG.cpp"
 )
 
 add_executable ( ${PROJECT_NAME} 
@@ -28,7 +28,7 @@ add_executable ( ${PROJECT_NAME}
 # Right click menu install and uninstall executable
 if(${SFPG_RIGHTCLICK})
 set (SRC_rightclick
-	src/WinRightclickMenu.cpp
+	"src/WinRightclickMenu.cpp"
 )
 
 add_executable(${PROJECT_NAME}_rightclick
@@ -73,26 +73,29 @@ install(TARGETS
 DESTINATION ./)
 
 install(FILES
-	install_files/Templates.csv
+	"install_files/Templates.csv"
 DESTINATION ./)
 
+install(SCRIPT "scripts/Install.cmake")
 
 if(${SFPG_RIGHTCLICK})
 	install(TARGETS
-		${PROJECT_NAME}_rightclick
+		"${PROJECT_NAME}_rightclick"
 	DESTINATION ./)
 
 	install(FILES
-		scripts/complete_uninstall.bat
-		scripts/setup_rightclick.bat
-		scripts/remove_rightclick.bat
-		install_files/QuickTemplates.csv
+		"scripts/complete_uninstall.bat"
+		"scripts/setup_rightclick.bat"
+		"scripts/remove_rightclick.bat"
+		"install_files/QuickTemplates.csv"
 	DESTINATION ./)
 endif()
 
 include(InstallRequiredSystemLibraries)
+LIST(APPEND CPACK_GENERATOR NSIS64)
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-installer")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
+set(CPACK_PRM_PRE_UNINSTALL_SCRIPT_FILE "./complete_uninstall.bat")
 include(CPack)

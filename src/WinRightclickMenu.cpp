@@ -143,7 +143,10 @@ void install(HKEY key_handle, const char* exec_dir)
     while (std::getline(tempalte_file, template_name))
     {
         // extract template name from .sft file
-        template_name = getTempalteName(template_name);
+        if(std::filesystem::exists(template_name))
+            template_name = getTempalteName(template_name);
+        // else assume template_name is the name of the template
+
         HKEY sub_key;
 
         std::stringstream name;
